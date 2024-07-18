@@ -1,5 +1,3 @@
-# ESP32_BLE_WiFi_Project
-Project to broadcast temperature and humidity data over BLE and transfer WiFi credentials to connect to a network
 # ESP32 BLE WiFi Project
 
 This project demonstrates how to use an ESP32 to broadcast Bluetooth Low Energy (BLE) services for temperature and humidity measurements and transfer WiFi credentials over BLE to connect to a WiFi network.
