@@ -45,7 +45,8 @@ This project demonstrates how to use an ESP32 to broadcast Bluetooth Low Energy 
 
 ## Screenshots
 
-![Screenshot1](screenshots/screenshot1.png)
+![Screenshot1](screenshots/photo_6111578337693515717_y.jpg
+)
 ![Screenshot2](screenshots/screenshot2.png)
 
 ## Demonstration Video
