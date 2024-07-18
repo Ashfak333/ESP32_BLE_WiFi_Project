@@ -1,112 +1,55 @@
 # ESP32_BLE_WiFi_Project
 Project to broadcast temperature and humidity data over BLE and transfer WiFi credentials to connect to a network
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <WiFi.h>
+# ESP32 BLE WiFi Project
 
-// BLE UUIDs
-#define SERVICE_UUID            "00000002-0000-0000-FDFD-FDFDFDFDFDFD"
-#define CHARACTERISTIC_TEMP     "00002A1C-0000-1000-8000-00805F9B34FB" // Example UUID for Temperature
-#define CHARACTERISTIC_HUM      "00002A6F-0000-1000-8000-00805F9B34FB" // Example UUID for Humidity
-#define WIFI_SERVICE_UUID       "00000003-0000-0000-FDFD-FDFDFDFDFDFD"
-#define WIFI_CRED_CHARACTERISTIC "00003A01-0000-1000-8000-00805F9B34FB" // Custom UUID for WiFi credentials
+This project demonstrates how to use an ESP32 to broadcast Bluetooth Low Energy (BLE) services for temperature and humidity measurements and transfer WiFi credentials over BLE to connect to a WiFi network.
 
-// Global variables
-BLECharacteristic *pCharacteristicTemp;
-BLECharacteristic *pCharacteristicHum;
-BLECharacteristic *pWiFiCredCharacteristic;
-bool newCredentials = false;
-String ssid;
-String password;
+## Features
 
-// Callback to handle received WiFi credentials
-class WiFiCredsCallbacks: public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
-    std::string value = pCharacteristic->getValue();
-    size_t separator = value.find(":");
-    if (separator != std::string::npos) {
-      ssid = value.substr(0, separator).c_str();
-      password = value.substr(separator + 1).c_str();
-      newCredentials = true;
-      Serial.println("Received new WiFi credentials:");
-      Serial.println("SSID: " + ssid);
-      Serial.println("Password: " + password);
-    }
-  }
-};
+- BLE service for temperature measurement
+- BLE service for humidity measurement
+- BLE service for WiFi credentials transfer
+- Connects to WiFi using received credentials
 
-void setup() {
-  Serial.begin(115200);
-  BLEDevice::init("ESP32_BLE");
+## Requirements
 
-  BLEServer *pServer = BLEDevice::createServer();
+- ESP32 development board
+- Arduino IDE with ESP32 support
+- BLE-enabled smartphone (for sending WiFi credentials)
 
-  // Temperature and Humidity Service
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+## Setup
 
-  pCharacteristicTemp = pService->createCharacteristic(
-                          CHARACTERISTIC_TEMP,
-                          BLECharacteristic::PROPERTY_READ |
-                          BLECharacteristic::PROPERTY_NOTIFY
-                        );
+1. **Install ESP32 Board in Arduino IDE**:
+    - Go to `File` > `Preferences`.
+    - Add `https://dl.espressif.com/dl/package_esp32_index.json` to the Additional Board Manager URLs.
+    - Go to `Tools` > `Board` > `Board Manager` and install `esp32` by Espressif Systems.
 
-  pCharacteristicHum = pService->createCharacteristic(
-                         CHARACTERISTIC_HUM,
-                         BLECharacteristic::PROPERTY_READ |
-                         BLECharacteristic::PROPERTY_NOTIFY
-                       );
+2. **Install Required Libraries**:
+    - `WiFi` (comes with ESP32 package)
+    - `BLEDevice` (comes with ESP32 package)
 
-  pService->start();
+3. **Upload the Code**:
+    - Open `main.cpp` in Arduino IDE.
+    - Select the correct board and port.
+    - Upload the sketch to the ESP32.
 
-  // WiFi Credentials Service
-  BLEService *pWiFiService = pServer->createService(WIFI_SERVICE_UUID);
-  pWiFiCredCharacteristic = pWiFiService->createCharacteristic(
-                             WIFI_CRED_CHARACTERISTIC,
-                             BLECharacteristic::PROPERTY_WRITE
-                           );
-  pWiFiCredCharacteristic->setCallbacks(new WiFiCredsCallbacks());
-  pWiFiService->start();
+## Usage
 
-  // Start advertising
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->addServiceUUID(WIFI_SERVICE_UUID);
-  pAdvertising->start();
-}
+1. Power the ESP32.
+2. Use a BLE-enabled smartphone app (e.g., nRF Connect) to connect to the ESP32.
+3. Send WiFi credentials in the format `SSID:Password` to the ESP32.
+4. The ESP32 will connect to the specified WiFi network and print the IP address on the Serial Monitor.
 
-void loop() {
-  // Simulate sensor data
-  float temperature = 25.0 + random(-500, 500) / 100.0;
-  float humidity = 50.0 + random(-200, 200) / 100.0;
+## Additional Documentation
 
-  // Convert to string
-  char tempStr[8];
-  dtostrf(temperature, 1, 2, tempStr);
-  char humStr[8];
-  dtostrf(humidity, 1, 2, humStr);
+- [Setup Instructions](docs/setup_instructions.md)
+- [Troubleshooting](docs/troubleshooting.md)
 
-  // Set value and notify
-  pCharacteristicTemp->setValue(tempStr);
-  pCharacteristicTemp->notify();
+## Screenshots
 
-  pCharacteristicHum->setValue(humStr);
-  pCharacteristicHum->notify();
+![Screenshot1](screenshots/screenshot1.png)
+![Screenshot2](screenshots/screenshot2.png)
 
-  delay(10000); // Update every 10 seconds
+## Demonstration Video
 
-  // Check for new WiFi credentials
-  if (newCredentials) {
-    newCredentials = false;
-    Serial.println("Connecting to WiFi...");
-    WiFi.begin(ssid.c_str(), password.c_str());
-
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(1000);
-      Serial.println("Connecting...");
-    }
-    Serial.println("Connected to WiFi");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
-  }
-}
+[Link to Demonstration Video](video/demonstration_video.mp4)
